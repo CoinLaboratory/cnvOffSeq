@@ -1,0 +1,247 @@
+##Important notes:
+
+##
+##1)To turn off graphical mode, change --plot to be 0. To turn it back on, set --plot 3
+##
+##2)Current parameter file models up to 3 copies per chrom (--modify0 0:1:2:3) with prior
+##  prob --modifyFrac0 0.01:0.97:0.01:0.01 for each copy respectively. 
+##  At the second stage, there will be --expand 2:8:1:1 states representing each copy number state respectively
+##  If you only want to have up to 2 copies per chrom, you set --modify0 0:1:2  and --modifyFrac0 0.01:0.98:0.01  
+##  and --expand 2:8:1
+##
+##3)Parameter --calcLD is set to true, but this does take more memory and time.  If you don't want LD calculations, its better to turn it off (--calcLD false)
+##
+##
+##
+##4) For fastest running of program, set --calcLD  false  and --saveStatePath false, 
+##  and turn plotting off (--plot 0) and also model only up to 2 copies per chrom (as in point 2)
+
+
+--exponentB 1:1:1
+######Files and genomic location  ########
+--data_params data.csv  # this contains the parameters specific for each data set
+--sheet paper   #which data sheet to use inside data.xls
+--seed 3487523  #Used for initialiseing random number generation
+--maxCoordDiff 3000000 # When integrating datasets containing same ids, max coord difference to tolerate
+--restrictKb 0kb:0kb  # how much to expand region to left and right of --mid region
+
+--experiment	  off_target	#name of experiment - used in output file
+--include	  RD	# #: # # #1000genAllele #	##1M:244k:which data sets to include (separated by :)
+--restrictIndivTo all	#can be null, otherwise restrict to individuals contained in all of these datasets
+--fillLikelihood  0:0		#0:0:for each dataset, if equals to one, then we set data in this data set to uniform dist    
+--numIt		  25	       #number of iterations
+--readClusters    false #read predefined clusters from cluster file
+--readGlobalClusterFile true  #do we read global cluster file or local
+--build  build37.txt   # which build file to use 
+--convertIds true  # use alternate ids in plate file
+--reverse false    # for reversing positions (i.e. running model backwards)
+
+######Training and sampling params############
+--numRep                        1     #number of times to repeat the analysis (results will be averaged over multiple runs)
+--noSamplesFromHMM              1     #how many times to re-sample haplotypes.  If set to 1 it uses viterbi rather than sampling
+--keepBest false     #whether to keep the best repetition, or average over all
+--saveStatePath false  #if true, it will print out the state allocation for each sample
+
+
+
+
+###################pseudo count parameters ######################
+--pseudoTG__frac        0.9:0.8:0.8:0.8:1.0:1.0	#controls priors on model parameters (em/trans/ logRBloc/logRBVar/mixture,  trans0)
+--pseudoTG__start       20:50:1:5:100:50      #controls priors on model parameters       
+--pseudoTG__limit	 1:50:1:5:100:50         #controls priors on model parameters       
+--pseudoTG__index_start  0:100:5:5:100:500		#controls priors on model parameters
+##best to allow a round of emission training before training variance prior etc.
+--pseudoTG__update_freq 0:0:0:0:0:0				#controls priors on model parameters
+
+
+--pseudo__frac        0.9:0.8:0.8:0.9:1.0:0.9	#controls priors on model parameters (em/trans/ logRBloc/logRBVar/mixture,  trans0)
+--pseudo__start       20:50:1:5:100:50      #controls priors on model parameters       
+--pseudo__limit	      1:50:1:5:100:50         #controls priors on model parameters       
+--pseudo__index_start 0:100:5:5:100:500		#controls priors on model parameters
+##best to allow a round of emission training before training variance prior etc.
+--pseudo__update_freq 0:0:0:0:0:0				#controls priors on model parameters
+
+
+
+#pseudo 1 is between group
+--pseudo1__frac  NA:0.8:NA:NA:NA:1			#controls priors on model parameters (within states in expanded model)
+--pseudo1__start NA:400:NA:NA:NA:NA                   #controls priors on model parameters
+--pseudo1__limit NA:100:NA:NA:NA:NA                  #controls priors on model parameters
+--pseudo1__index_start NA:0.0:NA:NA:NA:0		 #controls priors on model parameters
+--pseudo1__update_freq NA:0:NA:NA:NA:0			 #controls priors on model parameters
+
+#pseudo 2 is within groups
+--pseudo2__frac        NA:0.9:NA:NA:NA:1	#controls priors on model parameters (em/trans/exp/ logR +B)
+--pseudo2__start       NA:10:NA:NA:NA:1            #controls priors on model parameters       
+--pseudo2__limit       NA:10:NA:NA:NA:1          #controls priors on model parameters       
+--pseudo2__index_start NA:0:NA:NA:NA:0		#controls priors on model parameters
+--pseudo2__update_freq NA:0:NA:NA:NA:0				#controls priors on model parameters
+
+
+
+# pseudo3 controls priors on hyperparamters
+#global parameters
+
+--pseudo3__frac        NA:0.9:0.9:0.9:0.9:NA	 #controls priors on model parameters (em/trans/exp/ logR +B)
+--pseudo3__start       NA:1:20:80:10:NA            #controls priors on model parameters       
+--pseudo3__limit       NA:1:20:80:10:NA         #controls priors on model parameters       
+--pseudo3__index_start NA:0:100:100:1e10:NA		#cohntrols priors on model parameters
+--pseudo3__update_freq NA:0:0:0:0:NA				#controls priors on model parameters
+--changePriorCount 2
+
+
+
+
+
+######Markov model parameters###########
+--penaliseEnd false
+#--modify0 0:0:1:2 #start/end 0, normal 0
+--modify0 0:1:2
+
+#--modifyFrac0  0.5e-3:0.5e-3:0.5e-3::1e-2:1e-2:1e-2  #probability of jumping into  each of the states specificed in transMode0 
+#--modifyFracStart  1e-15:1e-15:1e-15::1e-15:1e-5:1e-5  #probability of starting in each of states specified in modify0
+#--modifyFracStart  1e-5:1e-5:1e-15::1e-15:1e-15
+--modifyFrac0  1e-2::1e-2:1e-2:1e-2  #probability of jumping into  each of the states specificed in transMode0
+
+#--modifyFrac0  1e-2:1e-2:0.33:0.33:0.33  #probability of jumping into  each of the states specificed in transMode0  
+#--modifyFrac0  0.33::0.33:1e-2:1e-2 
+--modifyFracStart  1e-15::1e-15:1e-5:1e-5  #robability of starting in each of states specified in modify0
+--expModelIntHotSpot1   1;1;1;1 #relative rate of transition out of ech of the states specified in transMode0
+#--transitionMatrix  1.02e-07:-426;426;2.33e-24:0.139;-0.504;0.365:4.07e-21;42.4;-42.4 predefined transition matrix
+
+#--transitionMatrix 1.1e-3:-40.88;20.44;20.44;0;0:2.44;-4.88;2.44;0;0:0;0;-200;200;0:0;0;0;-200;200:100;100;0;0;-200
+
+--transitionMatrix 1.1e-5:-40.88;20.44;20.44;0:2.44;-4.88;2.44;0:100;100;-500;300:0;20;80;-100
+
+
+#--transitionMatrix	1.1e-4:-5.398979;5.398979;0;0;0:0;-2.44;2.44;0;0:0;0;-2.44;1.94;0.5:0.051031;0;0;-0.102062;0.051031:0.5;0;0;4.898979;-5.398979
+
+#--transitionMatrix	1.1e-4:-5.398979;5.398979;0;0;0:0;-2.44;2.44;0;0:0.5;0;-2.44;0.94;0.5:0.051031;0;0;-0.102062;0.051031:0.5;0;0;4.898979;-5.398979
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+--expModelIntHotSpot 1:1:1e3  #relative transition rate between states *10e-8
+--gammaRate 5e-5:5e-5
+
+--transferEquilToStart false  #whether to use the eq prob dist of transition rate matrix as start probabilities
+--diffRatesPerState false    #different transition rates per state?
+--expand 4:4:4 # how many states to expand each of the copy number states into when doing the second round of iterations (including haplotype information)
+--useSameModelForAllCN false  #whether to make the 2 copy state obey HWE relative to 1 copy state
+--expand_init_prior  100:1e5:1e5:10:10    #dirichlet prior strength on emissions and transitions after expanding.
+				   #emiss, general trans,  start, freebetween, between groups
+--transMode0	1	    # controls the  transition model (can be 0,1,2,3,4)
+--trans1	true        # affects behaviour of transition model
+--transMode2  4:0:4   # transition mode to use in second round of training (with haplotypes)
+--svnTransM 1
+--expSd 0.00:0.00
+--trainGlobal     true	 #train a global rate matrix
+--transferGlobalLocal true  #use global rate matrix to inform local transitions
+
+--u_global                      1e5:1e5:1e5:1e5  # controls the initialisation of model parameters
+--u_global1                     1e5:1e5:1e5:1e5    # controls the initialisation of model parameters
+--samplePermute			0.0		 # controls the initialisation of model parameters
+
+
+#########Parameters for clustering BAF, LRR: #############
+--orthogonal true   #if set to true, we force the axis of variation in clusters to be along the axis
+--supressR false    #if set to true, prediction solely based on B freq
+--supressB false #if set to true, prediction solely based on logR
+
+
+#parameters for regularizing beta matrix:
+#--transformRToLogR false
+
+--r_train  1e6;1;1;1e6;1e6;1e6;1e6;1e6:1e6;1;10;1e6;1e6;1e6;1e6;1e6 
+#[cat, const, n, n^2,n^3, baf , baf^2 baf^3,/  cat, const,n, n^2,  n^3, baf, baf^2, baf^3]
+--b_train  1e6;1;5;1e6;1e6;1;1;1e6:1e6;1;10;10;1;10;1;10 
+--rho_train 1e6:10:20:50:1e10:1e10:1e10:1e10  #    [cat, const, n,n^2, n^3, baf,baf^2, baf^3]
+--rho_trainG 1e6:10:20:50:1e10:1e10:1e10:1e10  #    [cat, const, n,n^2, baf,baf^2]
+
+--bmid 0.5 ####paramater for affy data
+##ml params (if regression update model is not used
+--r_train2 1;1;1:2;50;1   #//first is general, second is for zero only, larger makes it harder for clusters to change
+--b_train2 1;1;1
+--rho_train2 1e3:1e3
+--r_train2G 1e2;1e2;1e2:10;1e2;1
+--rho_train2G 1e3:1e3
+
+--rhoMax 0.99 # maximum correlation
+--singleBClust false
+
+--numThreads 1
+##--regress   0:1:2:3:4:5:6:7:8:9:10	
+	#which copy number states to include in regression (0 should be excluded)
+
+--mltrain  0:1:2:3:4:5:6   #which CN states to do ML training for
+
+
+--sepModels false	#whether to have completely seperate BAF and LRR models for different phenotype groups
+
+--halfNormal true    # this allows atruncated normal at bfrac=0 and bfrac=1, instead of skew normal (it is faster than skew nrmal)
+
+--regressVariance false:false  #whether to include variance in regression model
+--maximiseGlobalRegress false
+
+#--nbdMeanPseudo	100
+#--nbdDispersionPseudo 4
+
+--nbdMeanPseudo	300
+--nbdDispersionPseudo 8
+
+#--nbdMeanPseudo	800
+#--nbdDispersionPseudo 15
+
+#################PLOTTING OPTIONS##################
+--bufferCompress false
+--scatterWidth 500
+#--cnToAnnotate 0  #annotates these samples in cluster plots
+#--annotateSamples NA12890  #annotates these samples in cluster plots
+
+--plot 0  #can be 0,1,2,3  0==no plot; 1==print plots to file; 2==plot on screen; 3==2 + show HMM plot
+--plotFlux true  #how to plot the transitions - as flux, or as probability 
+--state_brightness 0.3		# controls appearance of states in hmm plot
+--showHaps false   #whether to include a panel with haplotypes
+--b_panel false
+--r_panel false
+--showScatter false
+--showHMM false
+--plotHeight 500
+--useLocInHap false
+--showHapAllele false
+--pdf png:png  # format for output plots 
+--showEnsThresh 0000000  #if set to 0, does not show genes in plots.  Otherwise it is the bp distance below which genes will be shown
+--showAll true:true   #whether to show cluster positions for all clusters (even if no elements in cluster)
+--hmmFontSize 10
+--collapseScatterInd false
+--expandScatter 3   #how many scatter plots to show to the left and tright of most significant
+--scatterPlotsPerPage 10
+--snpsToPlot all
+--haplotypeHeight 8  #the height of haplotypes shown on the haplotype panel. 
+--haplotypeWidth  8
+#--stop 1:2:3:4  #:8:9  #:1:2:3:4  halts the model at these iterations
+--haploImageType png
+--imputedThreshGraph 0.0:0.0
+--qualityThresh 0.1
+--maxLogP 30
+###################PRINTING OPTIONS #################### 
+
+--splString \t
+--writeHMM  1     #print text representation of hmm:  0 = don't print; 1 = print final; 2 = print every iteration
+--overwrite false # whether to overwrite existing results for same region
+--writeAverages countAll #can also be countA, countB, allele
+--writeRes false #whether to write compress format output
+--saveModel false #whether to save hmm
+
+#############LD and association calculation options###################
+--calcAssoc			false		 #whether to calculate association between subcategories (if provided)
+
+--linearRegression		false
+--calcLD false			#whether to calculate ld results after identified haplotypes
+--ldtype  0:6   # what to calculate ld between, type 0==no_copies; type 1 noA; type 2 noB ;type==3 all states type ==4 intensity type 5 = BAF; type 6 = snp allele (excluding cn)
+--ld_dist_thresh 200000  # the distance threshold for calculating ld  
+--imputedThresh 0.0:0.0	 # the threshold on imputed values for inlucing in ld calculation
+--ld_r2_thresh  0.01	 # threshold for reporting ld values
+#--phenoToAssoc T2Diabetes
+#--experimentPhenoFile pheno.txt
+--quantiles 3
+--priorOdds 0.5
+--calcHWE false
